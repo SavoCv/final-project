@@ -1,1 +1,0 @@
-For end of game check if there are no valid moves
