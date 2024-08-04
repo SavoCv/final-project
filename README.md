@@ -10,6 +10,7 @@ This project aims to develop a Reversi game using Python and the Pygame framewor
 - Score tracking
 
 ### TODO
+- Bug: When play again is clicked, the move is registered for a new game
 - When the player is skipping a move, notify them about it.
 - Undo
 - Restart game

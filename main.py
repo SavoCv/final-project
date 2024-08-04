@@ -1,5 +1,6 @@
 import pygame
 import sys
+from time import sleep
 
 screen = None
 
@@ -27,7 +28,7 @@ def create_board():
     return board
 
 # Draw the game board
-def draw_board(board, current_player):
+def draw_board(board, current_player, bot_plays = False):
     for row in range(8):
         for col in range(8):
             pygame.draw.rect(screen, field_color, (col * field_size, row * field_size, field_size, field_size))
@@ -38,7 +39,12 @@ def draw_board(board, current_player):
             elif board[row][col] == 1:
                 pygame.draw.circle(screen, white, (col * field_size + field_size // 2, row * field_size + field_size // 2), tile_size_radius)
             elif is_valid_move(board, current_player, row, col):
-                pygame.draw.circle(screen, valid_move_color, (col * field_size + field_size // 2, row * field_size + field_size // 2), valid_move_radius)
+                pygame.draw.circle(
+                    screen, 
+                    gray if bot_plays else valid_move_color, 
+                    (col * field_size + field_size // 2, row * field_size + field_size // 2), 
+                    valid_move_radius
+                )
     font = pygame.font.Font(None, 36)
     for row in range(8):
         text = font.render(str(row + 1), True, black)
@@ -108,6 +114,53 @@ def has_valid_move(board, current_player):
                 return True
     return False
 
+# Min-max algorithm to calculate the best move
+def min_max(board, player, depth):
+    if depth == 0 or not has_valid_move(board, player):
+        return (None, evaluate(board, player))
+    
+    best_score = float('-inf') if player == -1 else float('inf')
+    best_move = None
+    
+    for row in range(8):
+        for col in range(8):
+            if is_valid_move(board, player, row, col):
+                # Make a temporary move
+                temp_board = [row[:] for row in board]
+                make_move(temp_board, player, row, col)
+                
+                # Recursively call min_max for the opponent
+                _, score = min_max(temp_board, -player, depth - 1)
+                
+                # Update the best score and move
+                if player == -1:
+                    if score > best_score:
+                        best_score = score
+                        best_move = (row, col)
+                else:
+                    if score < best_score:
+                        best_score = score
+                        best_move = (row, col)
+    
+    return (best_move, best_score)
+
+# Evaluate the board position
+def evaluate(board, player):
+    score = 0
+    for row in range(8):
+        for col in range(8):
+            if board[row][col] == player:
+                score += 1
+            elif board[row][col] == -player:
+                score -= 1
+    return score
+
+# Make a move using the min-max algorithm
+def make_move_min_max(board, player):
+    best_move, _ = min_max(board, player, depth=3)
+    if best_move is not None:
+        make_move(board, player, best_move[0], best_move[1])
+
 # End game dialog
 def end_game_dialog(board):
     x_count = sum(row.count(-1) for row in board)
@@ -173,7 +226,15 @@ def play_reversi():
         screen.fill(gray)
 
         # Draw the board
-        draw_board(board, current_player)
+        draw_board(board, current_player, bot_plays = current_player == 1)
+
+        if current_player == 1:
+            pygame.display.flip()
+            sleep(1)
+            make_move_min_max(board, current_player)
+            current_player = -current_player
+            pygame.display.flip()
+            continue
 
         black_count = sum(row.count(-1) for row in board)
         white_count = sum(row.count(1) for row in board)
