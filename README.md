@@ -11,6 +11,8 @@ This project aims to develop a Reversi game using Python and the Pygame framewor
 
 ### TODO
 - Bug: When play again is clicked, the move is registered for a new game
+- Bug: The counters on the right side are not updated when the game is over.
+- Bug: Check min_max algorithm, it may return wrong move when it is close to end of game
 - When the player is skipping a move, notify them about it.
 - Undo
 - Restart game
@@ -24,7 +26,7 @@ This project aims to develop a Reversi game using Python and the Pygame framewor
 
 ## Installation
 
-1. Clone the repository: `git clone https://github.com/your-username/reversi-game.git`
+1. Clone the repository: `git clone https://github.com/SavoCv/final-project.git`
 2. Install the required dependencies: `pip install pygame`
 3. Run the game: `python main.py`
 
