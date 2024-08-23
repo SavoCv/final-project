@@ -39,10 +39,13 @@ class Controller:
 
         # Game loop
         while not game_over:
+            mouse_pos = None
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_pos = pygame.mouse.get_pos()
 
             # Fill screen with gray color
             screen.fill(gray)
@@ -66,19 +69,28 @@ class Controller:
             white_text = font.render(f"White: {white_count}", True, white)
             screen.blit(black_text, (810, 10))
             screen.blit(white_text, (810, 50))
+            undo_button = pygame.Rect(810, 90, 100, 40)
+            pygame.draw.rect(screen, white, undo_button)
+            undo_text = font.render("Undo", True, black)
+            screen.blit(undo_text, (820, 100))
 
             # Update display
             pygame.display.flip()
 
             # Check for player input
-            if pygame.mouse.get_pressed()[0]:
-                mouse_pos = pygame.mouse.get_pos()
-                if mouse_pos[0] > 800:
-                    continue
-                row, col = GameScreen.get_clicked_position(mouse_pos)
-                if board.is_valid_move(current_player, row, col):
-                    board.make_move(current_player, row, col)
-                    current_player = -current_player
+            if mouse_pos:
+                if undo_button.collidepoint(mouse_pos):
+                    # Undo the last move
+                    print("undo clicked")
+                    board.undo_move()
+                    board.undo_move()
+                else:
+                    if mouse_pos[1] > 800:
+                        continue
+                    row, col = GameScreen.get_clicked_position(mouse_pos)
+                    if board.is_valid_move(current_player, row, col):
+                        board.make_move(current_player, row, col)
+                        current_player = -current_player
 
             # Switch player if current player has no valid moves
             if not board.has_valid_move(current_player):
