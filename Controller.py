@@ -5,13 +5,7 @@ from time import sleep
 from Board import Board
 from GameScreen import GameScreen
 from Solver.GreddyMinimaxSolver import GreddyMinimaxSolver
-
-# Constants
-field_size = 100
-field_count = 8
-tile_size_radius = field_size // 2 * 0.8
-valid_move_radius = field_size // 10
-padding = 5
+from Solver.PositionalMinimaxSolver import PositionalMinimaxSolver
 
 # Colors
 black = (0, 0, 0)
@@ -22,17 +16,18 @@ gray = (127, 127, 127)
 
 class Controller:
     def __init__(self):
-        self.sovler = GreddyMinimaxSolver(4)
-        pass
+        # self.solver = GreddyMinimaxSolver(3)
+        self.solver = PositionalMinimaxSolver(4)
+        self.board = Board()
+        self.gameScreen = GameScreen()
 
     # Main loop
     # Reversi game logic
     def play_reversi(self):
         # Game setup
-        global screen
-        board = Board()
-        gameScreen = GameScreen()
-        screen = gameScreen.screen
+        # board = Board()
+        # gameScreen = GameScreen()
+        screen = self.gameScreen.screen
         # board = create_board()
         current_player = -1
         game_over = False
@@ -51,28 +46,29 @@ class Controller:
             screen.fill(gray)
 
             # Draw the board
-            gameScreen.draw_board(board, current_player, bot_plays = current_player == 1)
+            self.gameScreen.draw_board(self.board, current_player, bot_plays = current_player == 1)
 
             if current_player == 1:
                 pygame.display.flip()
                 sleep(0.2)
-                move = self.sovler.getMove(board, current_player)
-                board.make_move(current_player, *move)
+                move = self.solver.getMove(self.board, current_player)
+                self.board.make_move(current_player, *move)
                 current_player = -current_player
                 pygame.display.flip()
                 continue
 
-            black_count = sum(row.count(-1) for row in board)
-            white_count = sum(row.count(1) for row in board)
+            black_count = sum(row.count(-1) for row in self.board)
+            white_count = sum(row.count(1) for row in self.board)
             font = pygame.font.Font(None, 36)
             black_text = font.render(f"Black: {black_count}", True, white)
             white_text = font.render(f"White: {white_count}", True, white)
             screen.blit(black_text, (810, 10))
             screen.blit(white_text, (810, 50))
             undo_button = pygame.Rect(810, 90, 100, 40)
-            pygame.draw.rect(screen, white, undo_button)
+            pygame.draw.rect(screen, white, undo_button, border_radius=15)
             undo_text = font.render("Undo", True, black)
-            screen.blit(undo_text, (820, 100))
+            undo_text_rect = undo_text.get_rect(center=undo_button.center)
+            screen.blit(undo_text, undo_text_rect)
 
             # Update display
             pygame.display.flip()
@@ -82,30 +78,30 @@ class Controller:
                 if undo_button.collidepoint(mouse_pos):
                     # Undo the last move
                     print("undo clicked")
-                    board.undo_move()
-                    board.undo_move()
+                    self.board.undo_move()
+                    self.board.undo_move()
                 else:
                     if mouse_pos[1] > 800:
                         continue
                     row, col = GameScreen.get_clicked_position(mouse_pos)
-                    if board.is_valid_move(current_player, row, col):
-                        board.make_move(current_player, row, col)
+                    if self.board.is_valid_move(current_player, row, col):
+                        self.board.make_move(current_player, row, col)
                         current_player = -current_player
 
             # Switch player if current player has no valid moves
-            if not board.has_valid_move(current_player):
+            if not self.board.has_valid_move(current_player):
                 current_player = -current_player
                 pygame.display.set_caption('Player plays again')
                 # pygame.time.wait(1000)
 
             # If both players have no valid moves, end the game
-            if not board.has_valid_move(current_player):
+            if not self.board.has_valid_move(current_player):
                 game_over = True
-                gameScreen.draw_board(board, current_player)
-                end_game = gameScreen.end_game_dialog(board)
+                self.gameScreen.draw_board(self.board, current_player)
+                end_game = self.gameScreen.end_game_dialog(self.board)
                 if end_game:
                     return
-                board = Board()
+                self.board = Board()
                 current_player = -1
                 game_over = False
 

@@ -66,3 +66,7 @@ class Board:
     def undo_move(self):
         if len(self.list_of_previous_boards) > 0:
             self.board = self.list_of_previous_boards.pop()
+
+    def __str__(self):
+        map = {-1: 'X', 0: '.', 1: 'O'}
+        return "\n".join(" ".join(map[cell] for cell in row) for row in self.board)

@@ -1,4 +1,4 @@
-from Solver.MinimaxSolver import MinimaxSolver
+from .MinimaxSolver import MinimaxSolver
 
 class GreddyMinimaxSolver(MinimaxSolver):
     def __init__(self, max_depth):

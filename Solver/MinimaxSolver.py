@@ -1,5 +1,5 @@
 from copy import deepcopy
-from Solver.BaseSolver import BaseSolver
+from .BaseSolver import BaseSolver
 
 class MinimaxSolver(BaseSolver):
     def __init__(self, max_depth):
@@ -21,7 +21,6 @@ class MinimaxSolver(BaseSolver):
             for col in range(8):
                 if board.is_valid_move(player, row, col):
                     # Make a temporary move
-                    # temp_board = [row[:] for row in board]
                     temp_board = deepcopy(board)
                     temp_board.make_move(player, row, col)
                     

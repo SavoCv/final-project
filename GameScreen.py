@@ -74,14 +74,14 @@ class GameScreen:
         play_again_button = pygame.Rect(300, 500, 200, 50)
         play_again_text = font.render("Play Again", True, black)
         play_again_text_rect = play_again_text.get_rect(center=(play_again_button.centerx, play_again_button.centery))
-        pygame.draw.rect(self.screen, (0, 255, 0), play_again_button)
+        pygame.draw.rect(self.screen, (0, 255, 0), play_again_button, border_radius=10)
         self.screen.blit(play_again_text, play_again_text_rect)
 
         # Exit option
         exit_button = pygame.Rect(300, 600, 200, 50)
         exit_text = font.render("Exit", True, black)
         exit_text_rect = exit_text.get_rect(center=(exit_button.centerx, exit_button.centery))
-        pygame.draw.rect(self.screen, (255, 0, 0), exit_button)
+        pygame.draw.rect(self.screen, (255, 0, 0), exit_button, border_radius=10)
         self.screen.blit(exit_text, exit_text_rect)
 
         pygame.display.flip()
