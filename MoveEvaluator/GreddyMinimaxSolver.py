@@ -1,6 +1,6 @@
-from .MinimaxSolver import MinimaxSolver
+from .MinimaxMoveSelector import MinimaxMoveSelector
 
-class GreddyMinimaxSolver(MinimaxSolver):
+class GreddyMinimaxSolver(MinimaxMoveSelector):
     def __init__(self, max_depth):
         super().__init__(max_depth)
     

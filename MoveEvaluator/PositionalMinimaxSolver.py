@@ -1,4 +1,4 @@
-from .MinimaxSolver import MinimaxSolver
+from .MinimaxMoveSelector import MinimaxMoveSelector
 
 position_matrix = [[ 30, -25, 10, 5, 5, 10, -25,  30,],
                    [-25, -25,  1, 1, 1,  1, -25, -25,],
@@ -9,7 +9,7 @@ position_matrix = [[ 30, -25, 10, 5, 5, 10, -25,  30,],
                    [-25, -25,  1, 1, 1,  1, -25, -25,],
                    [ 30, -25, 10, 5, 5, 10, -25,  30,]]
 
-class PositionalMinimaxSolver(MinimaxSolver):
+class PositionalMinimaxSolver(MinimaxMoveSelector):
     def __init__(self, max_depth, position_scaler = 1):
         super().__init__(max_depth)
         self.position_scaler = position_scaler

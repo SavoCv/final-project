@@ -4,8 +4,10 @@ from time import sleep
 
 from Board import Board
 from GameScreen import GameScreen
-from Solver.GreddyMinimaxSolver import GreddyMinimaxSolver
-from Solver.PositionalMinimaxSolver import PositionalMinimaxSolver
+from MoveEvaluator.GreddyMinimaxSolver import GreddyMinimaxSolver
+from MoveEvaluator.PositionalMinimaxSolver import PositionalMinimaxSolver
+from MoveEvaluator.MinimaxMoveSelector import MinimaxMoveSelector
+from MoveEvaluator.PositionEvaluator.GreedyEvaluator import GreedyEvaluator
 
 # Colors
 black = (0, 0, 0)
@@ -17,7 +19,8 @@ gray = (127, 127, 127)
 class Controller:
     def __init__(self):
         # self.solver = GreddyMinimaxSolver(3)
-        self.solver = PositionalMinimaxSolver(4)
+        # self.solver = PositionalMinimaxSolver(3)
+        self.solver = MinimaxMoveSelector(3, GreedyEvaluator())
         self.board = Board()
         self.gameScreen = GameScreen()
 
@@ -31,31 +34,38 @@ class Controller:
         # board = create_board()
         current_player = -1
         game_over = False
+        always_evaluate = False 
 
         # Game loop
         while not game_over:
             mouse_pos = None
+            evaluate = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        evaluate = True
+                    elif event.key == pygame.K_RETURN:
+                        always_evaluate = not always_evaluate
+
+            if always_evaluate:
+                evaluate = True
 
             # Fill screen with gray color
             screen.fill(gray)
 
-            # Draw the board
-            self.gameScreen.draw_board(self.board, current_player, bot_plays = current_player == 1)
-
-            if current_player == 1:
-                pygame.display.flip()
-                sleep(0.2)
-                move = self.solver.getMove(self.board, current_player)
-                self.board.make_move(current_player, *move)
+            # Switch player if current player has no valid moves
+            if not self.board.has_valid_move(current_player):
                 current_player = -current_player
-                pygame.display.flip()
-                continue
+                pygame.display.set_caption('Player plays again')
+                # pygame.time.wait(1000)
+
+            # Draw the board
+            self.gameScreen.draw_board(self.board, current_player)
 
             black_count = sum(row.count(-1) for row in self.board)
             white_count = sum(row.count(1) for row in self.board)
@@ -73,27 +83,6 @@ class Controller:
             # Update display
             pygame.display.flip()
 
-            # Check for player input
-            if mouse_pos:
-                if undo_button.collidepoint(mouse_pos):
-                    # Undo the last move
-                    print("undo clicked")
-                    self.board.undo_move()
-                    self.board.undo_move()
-                else:
-                    if mouse_pos[1] > 800:
-                        continue
-                    row, col = GameScreen.get_clicked_position(mouse_pos)
-                    if self.board.is_valid_move(current_player, row, col):
-                        self.board.make_move(current_player, row, col)
-                        current_player = -current_player
-
-            # Switch player if current player has no valid moves
-            if not self.board.has_valid_move(current_player):
-                current_player = -current_player
-                pygame.display.set_caption('Player plays again')
-                # pygame.time.wait(1000)
-
             # If both players have no valid moves, end the game
             if not self.board.has_valid_move(current_player):
                 game_over = True
@@ -104,5 +93,32 @@ class Controller:
                 self.board = Board()
                 current_player = -1
                 game_over = False
+
+            if evaluate and current_player == 1:
+                pygame.display.flip()
+                move = self.solver.getMove(self.board, current_player)
+                self.board.make_move(current_player, *move)
+                current_player = -current_player
+                pygame.display.flip()
+            elif evaluate and current_player == -1:
+                pygame.display.flip()
+                move = self.solver.getMove(self.board, current_player)
+                self.board.make_move(current_player, *move)
+                current_player = -current_player
+                pygame.display.flip()
+            else:
+                # Check for player input
+                if mouse_pos:
+                    if undo_button.collidepoint(mouse_pos):
+                        # Undo the last move
+                        self.board.undo_move()
+                        self.board.undo_move()
+                    else:
+                        if mouse_pos[1] > 800:
+                            continue
+                        row, col = GameScreen.get_clicked_position(mouse_pos)
+                        if self.board.is_valid_move(current_player, row, col):
+                            self.board.make_move(current_player, row, col)
+                            current_player = -current_player
 
     
