@@ -1,13 +1,13 @@
-from copy import deepcopy
 from .MoveSelector import MoveSelector
+from copy import deepcopy
 
-class MinimaxMoveSelector(MoveSelector):
+# Minimax with Alpha-Beta pruning
+class MinimaxWABMoveSelector(MoveSelector):
     def __init__(self, max_depth, position_evaluator):
         self.max_depth = max_depth
         self.position_evaluator = position_evaluator
-
-    # Min-max algorithm to calculate the best move
-    def min_max(self, board, player, depth):
+    
+    def min_max(self, board, player, depth, alpha, beta):
         if depth == 0 or not board.has_valid_move(player):
             return (None, self.position_evaluator.evaluate(board))
         
@@ -22,29 +22,25 @@ class MinimaxMoveSelector(MoveSelector):
                     temp_board.make_move(player, row, col)
                     
                     # Recursively call min_max for the opponent
-                    _, score = self.min_max(temp_board, -player, depth - 1)
-
-                    # if depth == self.max_depth:
-                    #     print(temp_board)
-                    #     print(row, col, score)
-                    #     print()
+                    _, score = self.min_max(temp_board, -player, depth - 1, alpha, beta)
                     
                     # Update the best score and move
                     if player == -1:
                         if score < best_score:
                             best_score = score
                             best_move = (row, col)
+                        beta = min(beta, best_score)
                     else:
                         if score > best_score:
                             best_score = score
                             best_move = (row, col)
+                        alpha = max(alpha, best_score)
+                    
+                    if beta <= alpha:
+                        break
         
-        # if depth == self.max_depth:
-        #     print()
-
         return (best_move, best_score)
-    
-    # Get the best move
+
     def getMove(self, board, player):
-        move, _ = self.min_max(board, player, self.max_depth)
+        move, _ = self.min_max(board, player, self.max_depth, float('-inf'), float('inf'))
         return move

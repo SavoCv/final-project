@@ -1,4 +1,4 @@
-from .MinimaxMoveSelector import MinimaxMoveSelector
+from .PositionEvaluator import PositionEvaluator
 
 position_matrix = [[ 30, -25, 10, 5, 5, 10, -25,  30,],
                    [-25, -25,  1, 1, 1,  1, -25, -25,],
@@ -9,31 +9,25 @@ position_matrix = [[ 30, -25, 10, 5, 5, 10, -25,  30,],
                    [-25, -25,  1, 1, 1,  1, -25, -25,],
                    [ 30, -25, 10, 5, 5, 10, -25,  30,]]
 
-class PositionalMinimaxSolver(MinimaxMoveSelector):
-    def __init__(self, max_depth, position_scaler = 1):
-        super().__init__(max_depth)
+class HeuristicEvaluator(PositionEvaluator):
+    def __init__(self, position_scaler = 1):
         self.position_scaler = position_scaler
-    
-    # Evaluate the board state
-    def evaluate(self, board, player):
+        self.evaluated = 0
+
+    def evaluate(self, board):
+        self.evaluated += 1
         disks_diff = 0
         num_disks = 0
         for row in range(8):
             for col in range(8):
-                if board[row][col] == player:
-                    disks_diff += 1
-                    num_disks += 1
-                elif board[row][col] == -player:
-                    disks_diff -= 1
+                disks_diff += board[row][col]
+                if board[row][col] != 0:
                     num_disks += 1
         
         position_eval = 0
         for row in range(8):
             for col in range(8):
-                if board[row][col] == player:
-                    position_eval += position_matrix[row][col]
-                elif board[row][col] == -player:
-                    position_eval -= position_matrix[row][col]
+                position_eval += board[row][col] * position_matrix[row][col]
         
         # This is called evaporation strategy
         if num_disks > 40:
@@ -44,3 +38,7 @@ class PositionalMinimaxSolver(MinimaxMoveSelector):
         # print(board)
         # print()
         return evaluation
+
+    def get_evaluated_and_reset(self):
+        self.evaluated, evaluated = 0, self.evaluated
+        return evaluated

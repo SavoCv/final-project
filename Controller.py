@@ -4,10 +4,12 @@ from time import sleep
 
 from Board import Board
 from GameScreen import GameScreen
-from MoveEvaluator.GreddyMinimaxSolver import GreddyMinimaxSolver
-from MoveEvaluator.PositionalMinimaxSolver import PositionalMinimaxSolver
 from MoveEvaluator.MinimaxMoveSelector import MinimaxMoveSelector
 from MoveEvaluator.PositionEvaluator.GreedyEvaluator import GreedyEvaluator
+from MoveEvaluator.PositionEvaluator.HeuristicEvaluator import HeuristicEvaluator
+from MoveEvaluator.MinimaxWABMoveSelector import MinimaxWABMoveSelector
+from MoveEvaluator.MinimaxWABWSMoveSelector import MinimaxWABWSMoveSelector
+import time
 
 # Colors
 black = (0, 0, 0)
@@ -16,11 +18,22 @@ field_color = (0, 128, 0)
 valid_move_color = (0, 255, 0)
 gray = (127, 127, 127)
 
+white_player = 1
+black_player = -1
+
 class Controller:
     def __init__(self):
         # self.solver = GreddyMinimaxSolver(3)
         # self.solver = PositionalMinimaxSolver(3)
-        self.solver = MinimaxMoveSelector(3, GreedyEvaluator())
+        # self.solver = MinimaxMoveSelector(3, GreedyEvaluator())
+        # self.solver = MinimaxMoveSelector(2, HeuristicEvaluator())
+        # self.solver = MinimaxWABMoveSelector(3, HeuristicEvaluator())
+        self.heuristic_evaluator_w = HeuristicEvaluator()
+        self.heuristic_evaluator_b = HeuristicEvaluator()
+        self.tmp_eval = HeuristicEvaluator()
+        self.white_move_selector = MinimaxWABMoveSelector(4, self.heuristic_evaluator_w)
+        self.black_move_selector = MinimaxWABMoveSelector(3, self.heuristic_evaluator_b)
+        self.tmp_move_selector = MinimaxWABWSMoveSelector(4, self.tmp_eval)
         self.board = Board()
         self.gameScreen = GameScreen()
 
@@ -96,13 +109,25 @@ class Controller:
 
             if evaluate and current_player == 1:
                 pygame.display.flip()
-                move = self.solver.getMove(self.board, current_player)
+                print()
+                start_time = time.time()
+                move = self.white_move_selector.getMove(self.board, current_player)
+                print("Time taken (white): ", time.time() - start_time)
+                print("Number of evaluated boards:", self.heuristic_evaluator_w.get_evaluated_and_reset())
+                start_time = time.time()
+                print(move, self.tmp_move_selector.getMove(self.board, current_player))
+                print("Time taken (tmp): ", time.time() - start_time)
+                print("Number of evaluated boards (tmp):", self.tmp_eval.get_evaluated_and_reset())
+                print()
                 self.board.make_move(current_player, *move)
                 current_player = -current_player
                 pygame.display.flip()
             elif evaluate and current_player == -1:
                 pygame.display.flip()
-                move = self.solver.getMove(self.board, current_player)
+                start_time = time.time()
+                move = self.black_move_selector.getMove(self.board, current_player)
+                print("Time taken (black): ", time.time() - start_time)
+                print("Number of evaluated boards:", self.heuristic_evaluator_b.get_evaluated_and_reset())
                 self.board.make_move(current_player, *move)
                 current_player = -current_player
                 pygame.display.flip()
