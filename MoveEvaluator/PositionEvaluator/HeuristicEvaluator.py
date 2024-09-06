@@ -1,16 +1,16 @@
 from .PositionEvaluator import PositionEvaluator
 
-position_matrix = [[ 30, -25, 10, 5, 5, 10, -25,  30,],
-                   [-25, -25,  1, 1, 1,  1, -25, -25,],
+position_matrix = [[ 40, -10, 10, 5, 5, 10, -10,  40,],
+                   [-10, -10,  1, 1, 1,  1, -10, -10,],
                    [ 10,   1,  5, 2, 2,  5,   1,  10,],
                    [  5,   1,  2, 1, 1,  2,   1,   5,],
                    [  5,   1,  2, 1, 1,  2,   1,   5,],
                    [ 10,   1,  5, 2, 2,  5,   1,  10,],
-                   [-25, -25,  1, 1, 1,  1, -25, -25,],
-                   [ 30, -25, 10, 5, 5, 10, -25,  30,]]
+                   [-10, -10,  1, 1, 1,  1, -10, -10,],
+                   [ 40, -10, 10, 5, 5, 10, -10,  40,]]
 
 class HeuristicEvaluator(PositionEvaluator):
-    def __init__(self, position_scaler = 1):
+    def __init__(self, position_scaler = 2):
         self.position_scaler = position_scaler
         self.evaluated = 0
 

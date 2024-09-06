@@ -10,6 +10,7 @@ class Board:
         self.board[4][3] = -1
         self.board[4][4] = 1
         self.list_of_previous_boards = []
+        self.num_disks = 4
     
     # Check if a move is valid
     def is_valid_move(self, player, row, col):
@@ -32,6 +33,7 @@ class Board:
 
     # Make a move
     def make_move(self, player, row, col):
+        self.num_disks += 1
         self.list_of_previous_boards.append(deepcopy(self.board))
         opponent = 1 if player == -1 else -1
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]
