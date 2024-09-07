@@ -64,6 +64,6 @@ class NegaScoutMoveSelector(MoveSelector):
         self.cnt = 0
         self.cnt2 = 0
         best_move, _ = self.nega_scout(board, player, self.max_depth, float('-inf'), float('inf'))
-        print(self.cnt)
-        print(self.cnt2)
+        # print(self.cnt)
+        # print(self.cnt2)
         return best_move

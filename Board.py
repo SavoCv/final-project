@@ -11,6 +11,7 @@ class Board:
         self.board[4][4] = 1
         self.list_of_previous_boards = []
         self.num_disks = 4
+        self.current_player = -1
     
     # Check if a move is valid
     def is_valid_move(self, player, row, col):
@@ -68,6 +69,9 @@ class Board:
     def undo_move(self):
         if len(self.list_of_previous_boards) > 0:
             self.board = self.list_of_previous_boards.pop()
+            self.num_disks -= 1
+            return True
+        return False
 
     def __str__(self):
         map = {-1: 'X', 0: '.', 1: 'O'}
