@@ -9,8 +9,8 @@ from GameScreen import *
 from MoveEvaluator.MinimaxMoveSelector import MinimaxMoveSelector
 from MoveEvaluator.PositionEvaluator.GreedyEvaluator import GreedyEvaluator
 from MoveEvaluator.PositionEvaluator.HeuristicEvaluator import HeuristicEvaluator
-from MoveEvaluator.MinimaxWABMoveSelector import MinimaxWABMoveSelector
-from MoveEvaluator.MinimaxWABWSMoveSelector import MinimaxWABWSMoveSelector
+from MoveEvaluator.AlphaBetaMoveSelector import AlphaBetaMoveSelector
+from MoveEvaluator.MinimaxWABWSMoveSelector import AlphaBetaWithSortMoveSelector
 from MoveEvaluator.NegaScoutMoveSelector import NegaScoutMoveSelector
 import time
 
@@ -41,6 +41,10 @@ class Controller:
         self.state = START_SCREEN
         self.played_move = None
         self.current_player = -1
+        self.calculate_time_white =  0
+        self.calculated_moves_white = 0
+        self.calculate_time_black = 0
+        self.calculated_moves_black = 0
 
     def get_state(self):
         if self.current_player == -1:
@@ -62,6 +66,8 @@ class Controller:
 
         self.state = START_SCREEN
 
+        start_time = 0
+
         # Game loop
         while self.state != EXIT:
 
@@ -69,6 +75,10 @@ class Controller:
                 self.gameScreen.start_screen()
                 if self.state != START_SCREEN:
                     self.state = self.get_state()
+                    self.calculate_time_white =  0
+                    self.calculated_moves_white = 0
+                    self.calculate_time_black = 0
+                    self.calculated_moves_black = 0
 
             self.played_move = None
 
@@ -87,12 +97,33 @@ class Controller:
             # If both players have no valid moves, end the game
             if not self.board.has_valid_move(self.current_player):
                 self.state = GAME_OVER
+                print("Game over")
+                print("Black average time: ", self.calculate_time_black / self.calculated_moves_black)
+                print("White average time: ", self.calculate_time_white / self.calculated_moves_white)
+                x_count = sum(row.count(-1) for row in self.board)
+                o_count = sum(row.count(1) for row in self.board)
+                print("Black count: ", x_count)
+                print("White count: ", o_count)
+                if self.black_move_selector is not None \
+                        and isinstance(self.black_move_selector.position_evaluator, HeuristicEvaluator):
+                    print("Black evaluations: ", self.black_move_selector.position_evaluator.get_evaluated_and_reset())
+                if self.white_move_selector is not None \
+                        and isinstance(self.white_move_selector.position_evaluator, HeuristicEvaluator):
+                    print("White evaluations: ", self.white_move_selector.position_evaluator.get_evaluated_and_reset())
+                print("Black selector: ", type(self.black_move_selector).__name__)
+                print("White selector: ", type(self.white_move_selector).__name__)
                 continue
                 
             if self.state == CALCULATING:
                 if not queue.empty():
                     move = queue.get()
                     self.board.make_move(self.current_player, *move)
+                    if self.current_player == 1:
+                        self.calculate_time_white += time.time() - start_time
+                        self.calculated_moves_white += 1
+                    else:
+                        self.calculate_time_black += time.time() - start_time
+                        self.calculated_moves_black += 1
                     self.current_player = -self.current_player
                     self.state = self.get_state()
                 continue
@@ -103,12 +134,14 @@ class Controller:
                     queue = Queue()
                     thread = Thread(target=calculate_move_in_background, args=(queue, self.white_move_selector, self.board, self.current_player))
                     thread.start()
+                    start_time = time.time()
             elif self.current_player == -1 and self.black_move_selector is not None:
                 if self.state != CALCULATING:
                     self.state = CALCULATING
                     queue = Queue()
                     thread = Thread(target=calculate_move_in_background, args=(queue, self.black_move_selector, self.board, self.current_player))
                     thread.start()
+                    start_time = time.time()
             else:
                 # Check for player input
                 if self.played_move and self.board.is_valid_move(self.current_player, *self.played_move):
@@ -128,6 +161,8 @@ class Controller:
     
     def undo_move(self):
         if self.white_move_selector is not None and self.black_move_selector is not None:
+            return
+        if self.state == CALCULATING:
             return
         if self.board.undo_move():
             self.current_player = -self.current_player
@@ -149,14 +184,16 @@ class Controller:
             else:
                 self.heuristic_evaluator_b = HeuristicEvaluator()
             choosen_depths[0] = int(choosen_depths[0])
-            if choosen_algorithms[0] == "minmax":
+            if choosen_algorithms[0] == "minimax":
                 self.black_move_selector = MinimaxMoveSelector(choosen_depths[0], self.heuristic_evaluator_b)
             elif choosen_algorithms[0] == "αβ":
-                self.black_move_selector = MinimaxWABMoveSelector(choosen_depths[0], self.heuristic_evaluator_b)
+                self.black_move_selector = AlphaBetaMoveSelector(choosen_depths[0], self.heuristic_evaluator_b)
             elif choosen_algorithms[0] == "negascout":
                 self.black_move_selector = NegaScoutMoveSelector(choosen_depths[0], self.heuristic_evaluator_b)
+            elif choosen_algorithms[0] == "ordering αβ":
+                self.black_move_selector = AlphaBetaWithSortMoveSelector(choosen_depths[0], self.heuristic_evaluator_b)
             else:
-                self.black_move_selector = MinimaxWABWSMoveSelector(choosen_depths[0], self.heuristic_evaluator_b)
+                self.black_move_selector = None
 
         if choosen_players[1] == "player":
             self.white_move_selector = None
@@ -166,11 +203,13 @@ class Controller:
             else:
                 self.heuristic_evaluator_w = HeuristicEvaluator()
             choosen_depths[1] = int(choosen_depths[1])
-            if choosen_algorithms[1] == "minmax":
+            if choosen_algorithms[1] == "minimax":
                 self.white_move_selector = MinimaxMoveSelector(choosen_depths[1], self.heuristic_evaluator_w)
             elif choosen_algorithms[1] == "αβ":
-                self.white_move_selector = MinimaxWABMoveSelector(choosen_depths[1], self.heuristic_evaluator_w)
+                self.white_move_selector = AlphaBetaMoveSelector(choosen_depths[1], self.heuristic_evaluator_w)
             elif choosen_algorithms[1] == "negascout":
                 self.white_move_selector = NegaScoutMoveSelector(choosen_depths[1], self.heuristic_evaluator_w)
+            elif choosen_algorithms[1] == "ordering αβ":
+                self.white_move_selector = AlphaBetaWithSortMoveSelector(choosen_depths[1], self.heuristic_evaluator_w)
             else:
-                self.white_move_selector = MinimaxWABWSMoveSelector(choosen_depths[1], self.heuristic_evaluator_w)
+                self.white_move_selector = None

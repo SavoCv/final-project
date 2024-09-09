@@ -2,7 +2,7 @@ from .MoveSelector import MoveSelector
 from copy import deepcopy
 
 # Minimax with Alpha-Beta pruning
-class MinimaxWABMoveSelector(MoveSelector):
+class AlphaBetaMoveSelector(MoveSelector):
     def __init__(self, max_depth, position_evaluator):
         self.max_depth = max_depth
         self.position_evaluator = position_evaluator
@@ -38,6 +38,8 @@ class MinimaxWABMoveSelector(MoveSelector):
                     
                     if beta <= alpha:
                         break
+            if beta <= alpha:
+                break
         
         return (best_move, best_score)
 

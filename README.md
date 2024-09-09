@@ -10,14 +10,8 @@ This project aims to develop a Reversi game using Python and the Pygame framewor
 - Score tracking
 
 ### TODO
-- Bug: Check min_max algorithm, it may return wrong move when it is close to end of game.
-- Bug: Unresponsive when move is calculated
 - Enable option to show how good is move
-- Enable undo when is end of game
 - When the player is skipping a move, notify them about it.
-- Restart game
-- Choosing between 1 player and 2 players, and algorithm for 1 player
-- AI opponent with adjustable difficulty levels
 - Leaderboard
 
 ## Technologies Used
