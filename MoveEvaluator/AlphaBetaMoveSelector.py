@@ -9,6 +9,8 @@ class AlphaBetaMoveSelector(MoveSelector):
     
     def min_max(self, board, player, depth, alpha, beta):
         if depth == 0 or not board.has_valid_move(player):
+            if depth != 0 and not board.has_valid_move(-player):
+                return self.min_max(board, -player, depth - 1, -beta, -alpha)
             return (None, self.position_evaluator.evaluate(board))
         
         best_score = float('inf') if player == -1 else float('-inf')
@@ -22,7 +24,8 @@ class AlphaBetaMoveSelector(MoveSelector):
                     temp_board.make_move(player, row, col)
                     
                     # Recursively call min_max for the opponent
-                    _, score = self.min_max(temp_board, -player, depth - 1, alpha, beta)
+                    _, score = self.min_max(
+                        temp_board, -player, depth - 1, alpha, beta)
                     
                     # Update the best score and move
                     if player == -1:
@@ -36,8 +39,10 @@ class AlphaBetaMoveSelector(MoveSelector):
                             best_move = (row, col)
                         alpha = max(alpha, best_score)
                     
+                    # Pruning
                     if beta <= alpha:
                         break
+            # Pruning
             if beta <= alpha:
                 break
         

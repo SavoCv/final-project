@@ -10,7 +10,7 @@ from MoveEvaluator.MinimaxMoveSelector import MinimaxMoveSelector
 from MoveEvaluator.PositionEvaluator.GreedyEvaluator import GreedyEvaluator
 from MoveEvaluator.PositionEvaluator.HeuristicEvaluator import HeuristicEvaluator
 from MoveEvaluator.AlphaBetaMoveSelector import AlphaBetaMoveSelector
-from MoveEvaluator.MinimaxWABWSMoveSelector import AlphaBetaWithSortMoveSelector
+from MoveEvaluator.AlphaBetaWithSortMoveSelector import AlphaBetaWithSortMoveSelector
 from MoveEvaluator.NegaScoutMoveSelector import NegaScoutMoveSelector
 import time
 
@@ -98,8 +98,10 @@ class Controller:
             if not self.board.has_valid_move(self.current_player):
                 self.state = GAME_OVER
                 print("Game over")
-                print("Black average time: ", self.calculate_time_black / self.calculated_moves_black)
-                print("White average time: ", self.calculate_time_white / self.calculated_moves_white)
+                if self.calculated_moves_black != 0:
+                    print("Black average time: ", self.calculate_time_black / self.calculated_moves_black)
+                if self.calculated_moves_white != 0:
+                    print("White average time: ", self.calculate_time_white / self.calculated_moves_white)
                 x_count = sum(row.count(-1) for row in self.board)
                 o_count = sum(row.count(1) for row in self.board)
                 print("Black count: ", x_count)
