@@ -22,7 +22,7 @@ This project aims to develop a Reversi game using Python and the Pygame framewor
 ## Installation
 
 1. Clone the repository: `git clone https://github.com/SavoCv/final-project.git`
-2. Install the required dependencies: `pip install pygame`
+2. Install the required dependencies: `pip install -r requirements.txt`
 3. Run the game: `python main.py`
 
 ## Usage
